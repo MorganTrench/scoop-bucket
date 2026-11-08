@@ -6,9 +6,7 @@ this repository does not redistribute executables.
 
 ## Install
 
-This repository is private. First authenticate Git for GitHub (for example,
-with `gh auth login` followed by `gh auth setup-git`). Your account needs access
-to this repository. If it becomes public, authentication is unnecessary.
+This repository is public. No GitHub account or authentication is needed.
 
 ```powershell
 scoop bucket add custom https://github.com/MorganTrench/scoop-bucket.git
