@@ -1,0 +1,46 @@
+name: Validate and update Hex
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 */4 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  hex:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Scoop
+        shell: pwsh
+        run: |
+          Invoke-RestMethod https://get.scoop.sh | Invoke-Expression
+      - name: Update manifest
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        shell: pwsh
+        run: |
+          & "$HOME/scoop/apps/scoop/current/bin/checkver.ps1" -App hex -Dir ./bucket -Update -ThrowError
+      - name: Validate
+        shell: pwsh
+        run: ./tests/check.ps1
+      - name: Commit update
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        shell: pwsh
+        run: |
+          git add bucket/hex.json
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) { exit 0 }
+          if ($LASTEXITCODE -ne 1) { throw 'Could not check staged changes.' }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'hex: Update stable release'
+          if ($LASTEXITCODE -ne 0) { throw 'Commit failed.' }
+          git push
+          if ($LASTEXITCODE -ne 0) { throw 'Push failed.' }

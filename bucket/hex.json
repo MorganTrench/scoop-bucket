@@ -1,0 +1,56 @@
+{
+    "version": "3.3.0",
+    "description": "Local voice dictation. Hold a key, speak, and Hex pastes the transcription.",
+    "homepage": "https://anoma.ly/hex/",
+    "license": "MIT",
+    "notes": [
+        "Launch Hex from the Start Menu or run 'hex app'. The first run downloads a speech model.",
+        "Update with 'scoop update hex', not Hex's direct installer. Quit Hex before updating or uninstalling.",
+        "Settings and speech models stay in Hex's user data folders when uninstalled."
+    ],
+    "architecture": {
+        "64bit": {
+            "url": "https://anoma.ly/release/hex/files/8eb6dfb49d59d30d7834fdbe52e4ac598a650989c2611590585fb4210d4fd1b2/hex.exe",
+            "hash": "8eb6dfb49d59d30d7834fdbe52e4ac598a650989c2611590585fb4210d4fd1b2",
+            "pre_install": "if (!(Test-Path \"$env:SystemRoot\\System32\\vulkan-1.dll\")) { throw 'Hex x64 requires a graphics driver with Vulkan support. Update your GPU driver and retry.' }"
+        },
+        "arm64": {
+            "url": "https://anoma.ly/release/hex/files/33bf443b322552379eee83e397a383d83ef249c8270cd21658a28ee8a2759fb8/hex.exe",
+            "hash": "33bf443b322552379eee83e397a383d83ef249c8270cd21658a28ee8a2759fb8"
+        }
+    },
+    "bin": "hex.exe",
+    "shortcuts": [
+        [
+            "hex.exe",
+            "Hex",
+            "app"
+        ]
+    ],
+    "checkver": {
+        "url": "https://anoma.ly/release/hex/desktop/stable.json",
+        "script": [
+            "$release = ($page | ConvertFrom-Json).release",
+            "'{0} {1} {2}' -f $release.version, $release.targets.'windows-x64'.sha256, $release.targets.'windows-arm64'.sha256"
+        ],
+        "regex": "(?<version>\\d+\\.\\d+\\.\\d+) (?<x64>[a-f0-9]{64}) (?<arm64>[a-f0-9]{64})"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://anoma.ly/release/hex/files/$matchX64/hex.exe",
+                "hash": {
+                    "url": "https://anoma.ly/release/hex/desktop/stable.json",
+                    "jsonpath": "$.release.targets['windows-x64'].sha256"
+                }
+            },
+            "arm64": {
+                "url": "https://anoma.ly/release/hex/files/$matchArm64/hex.exe",
+                "hash": {
+                    "url": "https://anoma.ly/release/hex/desktop/stable.json",
+                    "jsonpath": "$.release.targets['windows-arm64'].sha256"
+                }
+            }
+        }
+    }
+}
